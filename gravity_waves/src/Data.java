@@ -12,15 +12,15 @@ import java.util.ArrayList;
 
 public class Data {
 
-	private ArrayList<Double> strainH;		// the strain recorded at Hanford
-	private ArrayList<Double> strainL;		// the strain recorded at Livingstone
+	private double[] strainH;		// the strain recorded at Hanford
+	private double[] strainL;		// the strain recorded at Livingstone
 
 	private final double HLdelta = 52;		// the distance between H and L, in samples
 
 	/****
 	 * A helper to load datasets for us.
 	 */
-	private ArrayList<Double> loadFile( String f ) {
+	public static ArrayList<Double> loadFile( String f ) {
 
 		ArrayList<Double> retVal	= new ArrayList<Double>();
 		try {
@@ -57,18 +57,33 @@ public class Data {
 			return false;
 			}
 
-		strainH		= tempH;
-		strainL		= tempL;
+		strainH		= new double[ tempH.size() ];
+		strainL		= new double[ tempH.size() ];
+
+		for (int it = 0; it < tempH.size(); it++)	// this should be easier on the caches
+			strainH[it]	= tempH.get( it ).doubleValue();
+		for (int it = 0; it < tempH.size(); it++)	// this should be easier on the caches
+			strainL[it]	= tempL.get( it ).doubleValue();
 
 		return true;
 		}
+
+	/****
+	 * How long are the datasets, in samples?
+	 */
+	public int getLength() { return strainH.length; }
+
+	/****
+	 * How many datasets do we have?
+	 */
+	public char getDatasets() { return 2; }
 
 	/***
 	 * Retrieve the data from a given detector.
 	 */
 	public double getData( int offset, char detector ) {
 
-		if (offset > strainH.size() || offset < 0) {
+		if (offset > strainH.length || offset < 0) {
 
 			System.err.println( "ERROR: asked for impossible sample, " + offset );
 			return Double.NEGATIVE_INFINITY;
@@ -77,9 +92,9 @@ public class Data {
 		switch (detector) {
 
 			case 0:
-				return strainH.get( offset ).doubleValue();
+				return strainH[ offset ];
 			case 1:
-				return strainL.get( offset ).doubleValue();
+				return strainL[ offset ];
 			default:
 
 				System.err.println( "ERROR: asked for impossible detector, " + detector );
