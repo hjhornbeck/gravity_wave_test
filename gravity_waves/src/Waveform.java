@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class Waveform {
 
-	private double[] template;
+	private double[] template = new double[0];
 
 	/****
 	 * Load up the template.

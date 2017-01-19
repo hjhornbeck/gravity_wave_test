@@ -12,8 +12,8 @@ import java.util.ArrayList;
 
 public class Data {
 
-	private double[] strainH;		// the strain recorded at Hanford
-	private double[] strainL;		// the strain recorded at Livingstone
+	private double[] strainH = new double[0];	// the strain recorded at Hanford
+	private double[] strainL = new double[0];	// the strain recorded at Livingstone
 
 	private final double HLdelta = 52;		// the distance between H and L, in samples
 
@@ -76,7 +76,7 @@ public class Data {
 	/****
 	 * How many datasets do we have?
 	 */
-	public char getDatasets() { return 2; }
+	public char getDetectors() { return 2; }
 
 	/***
 	 * Retrieve the data from a given detector.
@@ -104,26 +104,28 @@ public class Data {
 		} // getData
 
 	/****
-	 * Return the sample offset between two detectors.
+	 * Return the maximum offset between detectors.
 	 */
-	public double getOffset( char first, char second ) {
+	public double maxOffset() {	return HLdelta; }
 
-		// organize these to make things easier
-		if ( second < first ) {
+	/****
+	 * Figure out the log prior probability of the given offsets
+	 */
+	public double logPriorDelta( int[] d ) {
 
-			char temp	= first;
-			first		= second;
-			second		= temp;
-			}
+		if (d.length != getDetectors())	// error checking
+			return Double.NEGATIVE_INFINITY;
 
-		if ( first == second )
-			return 0;
-		if ( first == 0 && second == 1 )
-			return HLdelta;
+		// with two detectors, the prior is proportional to the length of the
+		//  opposite side of a right-angle triangle, with the hypotenuse of
+		//  HLdelta
 
-		System.err.println( "ERROR: asked for impossible detector pair, " + first + " and " + second );
-		return Double.NEGATIVE_INFINITY;
+		double temp	= HLdelta*HLdelta - (d[0]-d[1])*(d[0]-d[1]);
+		if (temp > 0)
+			return 0.5 * Math.log( temp );
+		else
+			return Double.NEGATIVE_INFINITY;
 
-		}
+		} // logPriorDelta
 
 	} // Data

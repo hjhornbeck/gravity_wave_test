@@ -6,13 +6,15 @@
  *
  */
 
-public class Parameter {
+public class Parameter implements Comparable<Parameter> {
 
 	private Data data	= null;		// the dataset this parameter set applies to
 	private Waveform template = null;	// the gravity wave template to compare to
 	private int time = 0;			// the specific sample where the gravity wave starts
 	private double amp = 0.0;		// the amplitude of the gravity wave
 	private int[] delta;			// the difference between detectors
+	private double cached;			// a cache of the result, with a validity flag
+	private boolean cacheValid	= false;
 
 
 	/****
@@ -47,6 +49,8 @@ public class Parameter {
 		if ( d == null )
 			return false;
 
+		cacheValid = false;
+
 		data = d;
 		delta	= new int[ data.getDetectors() ];
 		adjustParams();
@@ -61,6 +65,8 @@ public class Parameter {
 
 		if ( w == null )
 			return false;
+
+		cacheValid = false;
 
 		template = w;
 		adjustParams();
@@ -79,6 +85,8 @@ public class Parameter {
 			if ( t < template.getLength() || t > data.getLength() + template.getLength() )
 				return false;
 
+		cacheValid = false;
+
 		time = t;
 		return true;
 
@@ -88,7 +96,7 @@ public class Parameter {
 	/***
 	 * Assign an amplitude. All values are valid.
 	 */
-	public void setAmplitude( double a ) { amp = a; }
+	public void setAmplitude( double a ) { amp = a; cacheValid = false; }
 
 
 	/***
@@ -108,6 +116,9 @@ public class Parameter {
 				else if ( d[it] < -(int)data.maxOffset() ) // round to zero?
 					return false;
 				}
+
+		cacheValid = false;
+
 		delta = d;
 		return true;
 		}
@@ -164,5 +175,35 @@ public class Parameter {
 		return OR;
 
 		} // logLikeli
+
+	/****
+	 * Calculate the log probability of this dataset.
+	 **/
+	public double logProb() {
+
+		if ( !cacheValid ) {
+
+			cached = logLikeli() * logPrior();
+			cacheValid = true;
+			}
+
+		return cached;
+
+		} // logProb
+
+	/****
+	 * Allow this Parameter to be compared to others.
+	 **/
+	public int compareTo( Parameter p ) {
+
+		double temp = logProb() - p.logProb();
+		if ( temp < 0 )
+			return -1;
+		else if ( temp > 0 )
+			return 1;
+		else
+			return 0;
+
+		} // compareTo
 
 	} // Parameter
