@@ -21,7 +21,7 @@ public class SearchBlock implements Runnable {
 
 	private double minAmp = -3.0;		// the min/max amplitude of the gravity wave
 	private double maxAmp =  3.0;
-	private double stepAmp = 1.0/100.0;	// how many steps to divide the range into
+	private double stepAmp = 1.0/10.0;	// how many steps to divide the range into
 
 	private Data data = null;		// the Data object shared among all Parameters
 	private Waveform template = null;	// the Waveform
